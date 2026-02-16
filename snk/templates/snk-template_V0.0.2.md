@@ -358,6 +358,51 @@ Key points:
 - Document only the project-specific or notable dependencies — do NOT list every transitive dependency.
 - Use `%variable%` for versions wherever a matching `v.list` variable exists.
 
+**Avro Schemas table — add this section at the end of `dependencies.md`:**
+
+```markdown
+## Esquemas Avro (Kafka)
+
+| Consumidor | Artefacto | Versión |
+|------------|-----------|---------|
+| <ConsumerName> | `<artifactId>` | %avro-<consumer>-version% |
+| ... | ... | ... |
+```
+
+Example:
+```markdown
+## Esquemas Avro (Kafka)
+
+| Consumidor                        | Artefacto                               | Versión                                            |
+|-----------------------------------|-----------------------------------------|----------------------------------------------------|
+| Site                              | `sitev1`                                | %avro-site-version%                                |
+| Site Grouping                     | `sitegrouping`                          | %avro-sitegrouping-version%                        |
+| Geographical Boundary             | `corporategeographicalboundaryv0`       | %avro-geographicalboundary-version%                |
+| Geographical Boundary Country     | `countryv1`                             | %avro-geographicalboundary-country-version%        |
+| Supplier                          | `supplierv3`                            | %avro-supplier-version%                            |
+| Supplier Location                 | `supplierlocationv2`                    | %avro-supplierlocation-version%                    |
+| Supplier Contact Person           | `suppliercontactpersonv1`               | %avro-suppliercontactperson-version%               |
+| Supplier Logistic Chain           | `supplierlogisticchainv1`               | %avro-supplierlogisticchain-version%               |
+| Supply Chain                      | `supplychain`                           | %avro-supplychain-version%                         |
+| Store Assortment                  | `storeassortment`                       | %avro-storeassortment-version%                     |
+| Purchase Supply Group             | `supplygroup`                           | %avro-supplygroup-version%                         |
+| Product Format                    | `productformat`                         | %avro-productformat-version%                       |
+| Product Hierarchy Node            | `producthierarchynodev1`                | %avro-producthierarchynode-version%                |
+| NonSales Article Format Article   | `nonsalesarticleformatarticlev0`        | %avro-nonsalesarticleformatarticle-version%        |
+| Product Taxes AI Proposal         | `producttaxesaiproposalv1`              | %avro-producttaxesaiproposal-version%              |
+| Stores Tariff                     | `storestariffv0`                        | %avro-storestariff-version%                        |
+| Tariff Sales Prices               | `productsalespricestariffsv0`           | %avro-productsalespricestariffs-version%           |
+| Employee Job Functions            | `employeejobfunctions`                  | %avro-employeejobfunctions-version%                |
+| Employee Org Unit Hierarchy       | `employeeorganizationalunithierarchyv0` | %avro-employeeorganizationalunithierarchy-version% |
+| Employee In Charge Of Product     | `employeeinchargeofproductformatv0`     | %avro-employeeinchargeofproductformat-version%     |
+```
+
+Key points for the Avro table:
+- One row per Kafka consumer module.
+- `Artefacto` column = the exact Maven `artifactId` of the Avro schema jar.
+- `Versión` column = `%avro-<consumer>-version%` variable referencing a v.list entry.
+- Add the corresponding `<var name="avro-<consumer>-version" value="<version>"/>` entries to `v.list` for each row. These Avro version vars are the exception to the rule of keeping v.list minimal — they belong here because they appear in this table.
+
 ---
 
 ### Design Tradeoffs (`design-tradeoffs.md`)
