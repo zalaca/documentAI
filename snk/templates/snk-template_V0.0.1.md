@@ -19,11 +19,11 @@ This project uses JetBrains Writerside v2.0 for documentation. All documentation
 
 ```
 wiki/
-├── writerside.cfg          # Main Writerside config (points to topics/, images/, wiki.tree)
+├── writerside.cfg          # Main Writerside config (points to topics/, resources/, wiki.tree)
 ├── wiki.tree               # Navigation tree (TOC) — defines page hierarchy
 ├── c.list                  # Category definitions
 ├── v.list                  # Reusable variables (%var_name% syntax)
-├── images/                 # Diagrams (Mermaid .mmd files, PNGs, etc.)
+├── resources/              # Diagrams (Mermaid .mmd files, PNGs, etc.)
 └── topics/                 # All documentation pages
     ├── overview/
     ├── architecture/
@@ -40,9 +40,9 @@ wiki/
 - **Format**: Markdown files (`.md`) inside `wiki/topics/<topic-name>/`.
 - **One topic per folder**: Each topic gets its own subdirectory under `topics/`.
 - **Variables**: Define reusable values in `v.list` and reference them as `%variable_name%` in markdown.
-- **Diagrams**: Place Mermaid (`.mmd`) or image files in `wiki/images/` and embed with:
+- **Diagrams**: Place Mermaid (`.mmd`) or image files in `wiki/resources/` and embed with:
   ```xml
-  <code-block lang="Mermaid" src="../../images/diagram.mmd"/>
+  <code-block lang="Mermaid" src="../../resources/diagram.mmd"/>
   ```
 - **Code blocks**: Use standard markdown fenced blocks or Writerside `<code-block>` tags when lang-specific rendering is needed.
 
@@ -220,7 +220,7 @@ Cuando llega un tombstone, se extrae el `geographicalBoundaryId` de la clave del
 - Always register new pages in `wiki.tree`.
 - Always use `%variable_name%` for versions and project name instead of hardcoding.
 - Keep documentation concise and technical — no filler text.
-- Place diagrams in `wiki/images/` and reference them, never inline large diagrams.
+- Place diagrams in `wiki/resources/` and reference them, never inline large diagrams.
 - Match the existing naming conventions: lowercase with hyphens for folders, underscores or hyphens for filenames matching the topic slug.
 - **When adding a new consumer:** add both a section in `business_logic.md` (following the consumer section pattern) AND a module entry in `architecture.md` (following the one-liner module pattern).
 - **Read the source code first:** Before documenting a consumer, read its adapter, mapper, batch class, and use case service to understand filtering, special logic, and batch collections.
