@@ -1,3 +1,16 @@
+---
+name: snk-documentation
+description: >
+  Generate or update Writerside wiki documentation for Kafka consumer microservices
+  with hexagonal architecture (SNK pattern). Use when documenting a microservice
+  that consumes Kafka topics and persists data to PostgreSQL. Covers: wiki folder
+  structure, documentation conventions, and all topic sections — overview,
+  architecture (Kafka consumer modules), dependencies (including Avro schemas table),
+  design tradeoffs, business logic (batch consumer pattern with tombstone handling),
+  infrastructure (Kafka + PostgreSQL config), and integration tests with TestContainers.
+  This is the V0.0.1 baseline; prefer snk-wiki-v2 for new projects.
+---
+
 # Project Documentation Guide (Writerside)
 
 ## Wiki Structure

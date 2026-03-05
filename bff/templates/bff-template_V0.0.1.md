@@ -1,3 +1,20 @@
+---
+name: bff-documentation
+description: >
+  Generate or update Writerside wiki documentation for Back for Front (BFF)
+  microservices. Use when documenting a microservice that exposes a REST API to
+  the frontend and aggregates calls to downstream services via Spring WebClient.
+  No Kafka consumers, no own database (stateless). Covers: mandatory DOCTYPE
+  declarations for all XML files, wiki structure, and all BFF-specific topic
+  sections — overview (REST-driven hexagonal flow), architecture (without Kafka/DB
+  sections, with WebClient driven adapters and ports table), dependencies (WebClient
+  client artifacts + downstream services table), design tradeoffs (stateless,
+  CompletableFuture, WebClient vs Feign), business logic (endpoint/use-case pattern
+  with parallel orchestration via CompletableFuture), infrastructure (without Kafka
+  or PostgreSQL sections), and unit tests with MockWebServer (no TestContainers child
+  pages in wiki.tree).
+---
+
 # Project Documentation Guide — BFF (Writerside)
 
 > **Tipo de microservicio:** Back for Front (BFF).
