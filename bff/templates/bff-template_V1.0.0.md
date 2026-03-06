@@ -26,11 +26,11 @@ This project uses JetBrains Writerside v2.0 for documentation. All documentation
 
 ```
 wiki/
-├── writerside.cfg          # Main Writerside config (points to topics/, images/, wiki.tree)
+├── writerside.cfg          # Main Writerside config (points to topics/, resources/, wiki.tree)
 ├── wiki.tree               # Navigation tree (TOC) — defines page hierarchy
 ├── c.list                  # Category definitions
 ├── v.list                  # Reusable variables (%var_name% syntax)
-├── images/                 # Diagrams (Mermaid .mmd files, PNGs, etc.)
+├── resources/              # Diagrams (Mermaid .mmd files, PNGs, etc.)
 └── topics/                 # All documentation pages
     ├── overview/
     ├── architecture/
@@ -47,9 +47,9 @@ wiki/
 - **Format**: Markdown files (`.md`) inside `wiki/topics/<topic-name>/`.
 - **One topic per folder**: Each topic gets its own subdirectory under `topics/`.
 - **Variables**: Define reusable values in `v.list` and reference them as `%variable_name%` in markdown.
-- **Diagrams**: Place Mermaid (`.mmd`) or image files in `wiki/images/` and embed with:
+- **Diagrams**: Place Mermaid (`.mmd`) or image files in `wiki/resources/` and embed with:
   ```xml
-  <code-block lang="Mermaid" src="../../images/diagram.mmd"/>
+  <code-block lang="Mermaid" src="../../resources/diagram.mmd"/>
   ```
 - **Code blocks**: Use standard markdown fenced blocks or Writerside `<code-block>` tags when lang-specific rendering is needed.
 - **Horizontal rules**: Use `---` to separate major sections within a page.
@@ -726,13 +726,13 @@ Key differences from a Kafka-consumer v.list:
 - Always register new pages in `wiki.tree`.
 - Always use `%variable_name%` for versions and project name instead of hardcoding.
 - Keep documentation concise and technical — no filler text.
-- Place diagrams in `wiki/images/` and reference them, never inline large diagrams.
+- Place diagrams in `wiki/resources/` and reference them, never inline large diagrams.
 - Match the existing naming conventions: lowercase with hyphens for folders, underscores or hyphens for filenames matching the topic slug.
 - **When adding a new endpoint/use case:** add a section in `business_logic.md` (following the endpoint section pattern) AND update the ports table in `architecture.md` if a new port is introduced.
 - **Read the source code first:** Before documenting a use case, read its controller adapter, use case class, driven adapters and mappers to entender la orquestación, las llamadas paralelas y el mapeo de datos.
 - **Match the prose style:** Use the established Spanish phrases listed above. Keep the same level of detail as existing sections — describe qué endpoint delega en qué use case, qué servicios invoca, si hay paralelismo y qué lógica condicional aplica.
 - **Do NOT number section headings** in any wiki file. Sections use plain `##` or `###` headings without numeric prefixes.
-- **No batch flow diagram** — los BFF no tienen `flow.mmd`. Si se añade un diagrama de flujo, crear un fichero `.mmd` ad-hoc en `wiki/images/` con nombre descriptivo.
+- **No batch flow diagram** — los BFF no tienen `flow.mmd`. Si se añade un diagrama de flujo, crear un fichero `.mmd` ad-hoc en `wiki/resources/` con nombre descriptivo.
 - **infrastructure.md** is a simplified reference page — do not paste exhaustive YAML configs into it. Use the simplified format described in the Infrastructure section above. No incluir sección de Kafka ni PostgreSQL.
 - **business_logic.md** documents use cases and endpoints, NOT batch consumer logic. No references to tombstones, batch collections, or Kafka.
 - **DOCTYPE declarations are mandatory** in all four XML files (`writerside.cfg`, `wiki.tree`, `c.list`, `v.list`). Never omit them.
