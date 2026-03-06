@@ -1,17 +1,17 @@
 ---
 name: javadoc-writer
 description: >
-  Add or update Javadoc comments in Java Spring Boot domain classes and service
-  methods for WEB/SNK/BTC/BFF microservices with hexagonal architecture.
-  Use when documenting domain classes, application services, strategies, or
-  any class with non-trivial logic.
-  Covers: class-level Javadoc, method Javadoc with @param/@return, field
-  comments for non-obvious fields, and inline comments for complex logic.
-  Does NOT add comments to trivial fields (id, name, etc.) or self-explanatory
-  simple getters/setters. This is the V0.0.1 version for BTC repositories.
+Add or update Javadoc comments in Java Spring Boot domain classes and service
+methods for WEB/SNK/BTC/BFF microservices with hexagonal architecture.
+Use when documenting domain classes, application services, strategies, or
+any class with non-trivial logic.
+Covers: class-level Javadoc, method Javadoc with @param/@return, field
+comments for non-obvious fields, and inline comments for complex logic.
+Does NOT add comments to trivial fields (id, name, etc.) or self-explanatory
+simple getters/setters. This is the V0.0.1 version — covers BTC and SNK repositories.
 ---
 
-# Code Documentation Guide — BTC/WEB Microservices
+# Code Documentation Guide — BTC/WEB/SNK Microservices
 
 ## General Rules
 
@@ -54,6 +54,9 @@ public class MyDomainClass { ... }
 | Domain enum | Yes | Explain what the enum discriminates |
 | Abstract strategy / service | Yes | Explain the pattern and lifecycle |
 | Concrete strategy implementation | Yes | Describe which movement type it handles |
+| Batch class (`*Batch`) | Yes | Explain partition logic and AutoCloseable lifecycle |
+| Kafka consumer adapter | Yes | Describe the topic and routing logic |
+| Port interface (driving/driven) | Yes | One-line contract description |
 | Simple DTO / filter | Optional | Only if the name is ambiguous |
 | Exception class | Optional | Only if the semantics are non-obvious |
 
@@ -124,12 +127,14 @@ Add a single-line `/** ... */` or `//` comment above fields that encode non-obvi
 - Composite natural keys.
 - Fields whose nullability has business meaning (e.g. null = "not yet defined").
 - Fields that shadow or extend a concept from an external system.
+- Kafka metadata fields (`toDelete`, `timestamp`, `offset`) — see Section 8.
 
 ### Fields that do NOT need a comment
 
 - `id`, `name`, `code`, `description`, `value` — self-explanatory.
 - Standard audit fields (`createdAt`, `updatedAt`).
 - Fields whose name matches exactly the column or API attribute they map to.
+- Fields that merely restate the field name: `/** Tariff Identifier */` over `tariffId` is noise.
 
 ### Pattern
 
@@ -361,12 +366,120 @@ public enum TariffType {
 - Do not comment `@Override` methods that simply delegate without additional logic.
 - Do not state the obvious: `// sets the value` above `this.value = value` is noise.
 - Do not duplicate the method signature in the Javadoc: `@param id the id` adds no value.
-- Do not add `@author` or `@since` tags — version control handles that.
+- Do not add `@author`, `@since`, or `@version` tags — version control handles that.
 - Do not comment import blocks.
+- Do not add field comments that merely restate the field name (e.g. `/** Tariff Identifier */` over `tariffId`).
 
 ---
 
-## 7. Quick Reference Checklist
+## 7. SNK: Kafka Metadata Fields
+
+These three fields appear in all SNK domain entities. Their names look simple but their semantics are non-obvious — **always document them**.
+
+```java
+/** When {@code true}, this record must be deleted instead of upserted. */
+private Boolean toDelete;
+
+/** Kafka message timestamp; used alongside {@code offset} for deduplication ordering within a batch. */
+private Long timestamp;
+
+/** Kafka partition offset; combined with {@code timestamp} to resolve the latest record per key. */
+private Long offset;
+```
+
+---
+
+## 8. SNK: Batch Classes
+
+Batch classes aggregate Kafka events into two disjoint sets (upsert vs. delete) and implement `AutoCloseable` for explicit memory release.
+
+```java
+/**
+ * Aggregates a list of [Domain] Kafka events into records to upsert and IDs to delete.
+ *
+ * <p>Records are sorted by offset and timestamp (descending) before partitioning,
+ * so the latest event per key takes precedence within the batch.</p>
+ *
+ * <p>Implements {@link AutoCloseable} to allow explicit release of both sets
+ * after the batch has been processed.</p>
+ */
+public class XxxBatch implements AutoCloseable { ... }
+```
+
+**Field comments inside batch classes are not needed** — `xxxToProcess` and `idsToDelete` are self-explanatory.
+
+---
+
+## 9. SNK: Kafka Consumer Adapters
+
+```java
+/**
+ * Kafka consumer adapter for processing [Domain] events.
+ *
+ * Partitions the incoming batch into valid records and deserialization errors,
+ * delegates valid records to {@link XxxPort}, and tracks failures via Micrometer counters.
+ */
+@Slf4j
+@Component
+public class XxxConsumerAdapter extends MercadonaKafkaBatchConsumerListener<K, V> { ... }
+```
+
+Standard method patterns — one-line summaries only:
+
+```java
+/** Processes a batch of consumer records, routing deserialization errors to the error handler. */
+@Override
+public void consume(List<ConsumerRecord<K, V>> events) { ... }
+
+/**
+ * Processes a list of valid records as a single batch.
+ * Falls back to per-record processing if the batch fails.
+ *
+ * @param eventsToProcess the list of valid consumer records to process
+ */
+public void processRecords(List<ConsumerRecord<K, V>> eventsToProcess) { ... }
+
+/**
+ * Processes a single consumer record, delegating errors to the error handler.
+ *
+ * @param eventToProcess the consumer record to process
+ */
+public void processRecord(ConsumerRecord<K, V> eventToProcess) { ... }
+```
+
+Private methods (`processError`, `logError`) do not need Javadoc.
+
+---
+
+## 10. SNK: Port Interfaces
+
+```java
+/**
+ * Driving port defining the contract for [Domain] operations.
+ */
+public interface XxxPort {
+
+    /**
+     * Processes a batch of [domain] records (batch path).
+     *
+     * @param batch the batch to process
+     */
+    void processAll(XxxBatch batch);
+
+    /**
+     * Processes a single [domain] record with retry (individual fallback path).
+     *
+     * @param batch the single-record batch to process
+     */
+    void processOne(XxxBatch batch);
+}
+```
+
+Driven ports (datasource) follow the same pattern — one-line class Javadoc, `@param` on each method.
+
+---
+
+## 11. Quick Reference Checklist
 
 Before finishing documentation on a file, verify:
 
@@ -378,3 +491,8 @@ Before finishing documentation on a file, verify:
 - [ ] Enum constants with domain-specific meaning have a brief `/** ... */` comment.
 - [ ] No trivial fields (`id`, `name`, `value`) were over-commented.
 - [ ] No comments merely restate what the code already says.
+- [ ] No `@author`, `@version`, or `@since` tags present.
+- [ ] Batch class has Javadoc explaining its partition logic and `AutoCloseable` lifecycle.
+- [ ] Consumer adapter class has Javadoc; `consume`/`processRecords`/`processRecord` have one-line summaries.
+- [ ] Port interface has class-level Javadoc; each method has `@param`.
+- [ ] Kafka metadata fields (`toDelete`, `timestamp`, `offset`) are documented in every domain entity.
