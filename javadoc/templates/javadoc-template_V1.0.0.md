@@ -341,20 +341,20 @@ Document the enum class and any non-obvious constants or fields.
 @RequiredArgsConstructor
 public enum TariffType {
 
-    /** Standard country-wide tariff. */
-    GENERAL("1", "COUNTRY"),
+  /** Standard country-wide tariff. */
+  GENERAL("1", "COUNTRY"),
 
-    /** Zone-specific exception tariff (e.g. border or special regions). */
-    EXCEPTION("2", "EXCEPTION");
+  /** Zone-specific exception tariff (e.g. border or special regions). */
+  EXCEPTION("2", "EXCEPTION");
 
-    /** Numeric code expected by the pricing API. */
-    private final String id;
+  /** Numeric code expected by the pricing API. */
+  private final String id;
 
-    /**
-     * String discriminator stored in {@link SalesPrice#typeId}.
-     * Maps to the {@code typeId} field — not the API numeric code.
-     */
-    private final String value;
+  /**
+   * String discriminator stored in {@link SalesPrice#typeId}.
+   * Maps to the {@code typeId} field — not the API numeric code.
+   */
+  private final String value;
 }
 ```
 
@@ -459,19 +459,19 @@ Private methods (`processError`, `logError`) do not need Javadoc.
  */
 public interface XxxPort {
 
-    /**
-     * Processes a batch of [domain] records (batch path).
-     *
-     * @param batch the batch to process
-     */
-    void processAll(XxxBatch batch);
+  /**
+   * Processes a batch of [domain] records (batch path).
+   *
+   * @param batch the batch to process
+   */
+  void processAll(XxxBatch batch);
 
-    /**
-     * Processes a single [domain] record with retry (individual fallback path).
-     *
-     * @param batch the single-record batch to process
-     */
-    void processOne(XxxBatch batch);
+  /**
+   * Processes a single [domain] record with retry (individual fallback path).
+   *
+   * @param batch the single-record batch to process
+   */
+  void processOne(XxxBatch batch);
 }
 ```
 
@@ -479,7 +479,109 @@ Driven ports (datasource) follow the same pattern — one-line class Javadoc, `@
 
 ---
 
-## 11. Quick Reference Checklist
+## 11. WEB: REST Controller Adapters
+
+REST controller adapters in `driving/api-rest` translate HTTP requests to application port calls. They are worth documenting when they implement non-trivial routing, parameter transformation, or business-conditional logic.
+
+### Class-level pattern
+
+```java
+/**
+ * REST controller adapter for <domain>-related API endpoints.
+ *
+ * <p>This adapter implements the <Name>Api interface and provides REST endpoints
+ * for <short description of what it exposes>.
+ */
+@RestController
+@RequiredArgsConstructor
+public class XxxControllerAdapter implements XxxApi { ... }
+```
+
+### Method-level pattern
+
+```java
+/**
+ * Retrieves <resource> for the given <context>.
+ *
+ * @param locale     the locale used to localise the response
+ * @param categoryId the category identifier used to filter results
+ * @return a {@link ResponseEntity} containing a list of {@link XxxDto} objects
+ */
+@Override
+public ResponseEntity<List<XxxDto>> getXxx(String locale, String categoryId) { ... }
+```
+
+### Rules specific to controllers
+
+- Add method Javadoc when the method has **2 or more parameters** or performs any non-obvious mapping (e.g. enum resolution, null fallback, conditional logic).
+- One-liner delegate methods with a single parameter may use a one-line summary without `@param`.
+- Do **not** document `@Override` methods that are pure pass-throughs with zero transformation logic.
+
+---
+
+## 12. WEB: API-Driven Adapters (WebClient / HTTP clients)
+
+Driven adapters in `driven/*-datasource` that call external HTTP services deserve class and method Javadoc to make their contract visible without reading the service layer.
+
+### Class-level pattern
+
+```java
+/**
+ * Driven adapter for the <ServiceName> HTTP API.
+ *
+ * <p>Provides access to <describe what data it fetches> via WebClient.
+ * Implements {@link XxxDatasourcePort}.
+ */
+@Component
+@RequiredArgsConstructor
+public class XxxDatasourceAdapter implements XxxDatasourcePort { ... }
+```
+
+### Method-level pattern (same as service methods)
+
+```java
+/**
+ * Retrieves <resource> matching the given <criteria>.
+ *
+ * @param description partial name or description used to search
+ * @return list of matching {@link XxxDomain} objects; empty list if none found
+ */
+@Override
+public List<XxxDomain> getXxx(String description) { ... }
+```
+
+### Example (BFF adapter)
+
+```java
+/**
+ * Driven adapter for the corporate BFF HTTP API.
+ *
+ * <p>Provides product brand and tariff data that is not available
+ * directly from Golden Record or Masterdata. Implements {@link BffDatasourcePort}.
+ */
+public class BffDatasourceAdapter implements BffDatasourcePort {
+
+    /**
+     * Retrieves product brands whose name matches the given description.
+     *
+     * @param description partial brand name used as search criterion
+     * @return list of matching {@link ProductBrand} objects
+     */
+    public List<ProductBrand> getBrands(String description) { ... }
+
+    /**
+     * Retrieves tariffs for the given tariff type code.
+     *
+     * @param tariffType the tariff type identifier (e.g. "1" for GENERAL, "2" for EXCEPTION)
+     * @return list of {@link Tariff} objects for the requested type
+     */
+    public List<Tariff> getTariffs(String tariffType) { ... }
+}
+```
+
+---
+
+## 13. Quick Reference Checklist
 
 Before finishing documentation on a file, verify:
 
@@ -496,3 +598,5 @@ Before finishing documentation on a file, verify:
 - [ ] Consumer adapter class has Javadoc; `consume`/`processRecords`/`processRecord` have one-line summaries.
 - [ ] Port interface has class-level Javadoc; each method has `@param`.
 - [ ] Kafka metadata fields (`toDelete`, `timestamp`, `offset`) are documented in every domain entity.
+- [ ] REST controller adapter has class-level Javadoc; methods with 2+ params or non-trivial logic have `@param`/`@return`.
+- [ ] API-driven adapter (WebClient/HTTP) has class-level Javadoc and method Javadoc on all public methods.
